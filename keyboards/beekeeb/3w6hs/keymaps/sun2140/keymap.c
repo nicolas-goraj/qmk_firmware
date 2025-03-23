@@ -150,21 +150,45 @@ const key_override_t *key_overrides[] = {
 
 
 enum combo_events {
-  CAPS_WORD,
+  TURN_ON_CAPS_WORD,
+  TOGGLE_SYM_LAYER,
+  TURN_ON_NAV_NUM,
+  TURN_OFF_NAV_NUM,
 };
 
-const uint16_t PROGMEM shift_shift_combo[] = {LSFT_T(FR_N), LSFT_T(FR_R), COMBO_END};
+const uint16_t PROGMEM turn_on_caps_word_combo[] = {LSFT_T(FR_N), LSFT_T(FR_R), COMBO_END};
+const uint16_t PROGMEM toggle_sym_layer_combo[] = {LT(_SYM, KC_TAB), LT(_SYM, KC_ENT), COMBO_END};
+const uint16_t PROGMEM turn_on_nav_num_layer_combo[] = {LT(_NAV_NUM,KC_BSPC), LT(_NAV_NUM, KC_SPC), COMBO_END};
+const uint16_t PROGMEM turn_off_nav_num_layer_combo[] = {KC_DEL, LT(_NAV_NUM, KC_SPC), COMBO_END};
 
 
 combo_t key_combos[] = {
-    [CAPS_WORD] = COMBO_ACTION(shift_shift_combo),
+    [TURN_ON_CAPS_WORD] = COMBO_ACTION(turn_on_caps_word_combo),
+    [TOGGLE_SYM_LAYER] = COMBO_ACTION(toggle_sym_layer_combo),
+    [TURN_ON_NAV_NUM] = COMBO_ACTION(turn_on_nav_num_layer_combo),
+    [TURN_OFF_NAV_NUM] = COMBO_ACTION(turn_off_nav_num_layer_combo),
 };
 
 void process_combo_event(uint16_t combo_index, bool pressed) {
   switch(combo_index) {
-    case CAPS_WORD:
+    case TURN_ON_CAPS_WORD:
       if (pressed) {
         caps_word_on();
+      }
+      break;
+    case TOGGLE_SYM_LAYER:
+      if (pressed) {
+        layer_lock_invert(_SYM);
+      }
+      break;
+    case TURN_ON_NAV_NUM:
+      if (pressed) {
+        layer_lock_on(_NAV_NUM);
+      }
+      break;
+    case TURN_OFF_NAV_NUM:
+      if (pressed) {
+        layer_lock_off(_NAV_NUM);
       }
       break;
   }
