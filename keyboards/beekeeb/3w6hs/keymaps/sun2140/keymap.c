@@ -147,3 +147,25 @@ const key_override_t *key_overrides[] = {
     &shift_oe_is_capital_oe,
     &shift_ae_is_capital_ae
 };
+
+
+enum combo_events {
+  CAPS_WORD,
+};
+
+const uint16_t PROGMEM shift_shift_combo[] = {LSFT_T(FR_N), LSFT_T(FR_R), COMBO_END};
+
+
+combo_t key_combos[] = {
+    [CAPS_WORD] = COMBO_ACTION(shift_shift_combo),
+};
+
+void process_combo_event(uint16_t combo_index, bool pressed) {
+  switch(combo_index) {
+    case CAPS_WORD:
+      if (pressed) {
+        caps_word_on();
+      }
+      break;
+  }
+}
