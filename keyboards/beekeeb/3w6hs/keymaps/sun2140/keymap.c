@@ -56,8 +56,21 @@
 #define LT_SPC LT(_NAV_NUM, KC_SPC)   // Thumb cluster
 #define LT_ENT LT(_SYM, KC_ENT)       // Thumb cluster
 
+#define AC_CIRC OSL(_AC_CIRC)
+#define AC_AIGU OSL(_AC_AIGU)
+#define AC_GRAV OSL(_AC_GRAV)
+
+
+enum custom_keycodes {
+  E_CIRC = SAFE_RANGE,
+};
+
+
 enum layers {
     _ALPHA,
+    _AC_CIRC,
+    _AC_AIGU,
+    _AC_GRAV,
     _SYM,
     _NAV_NUM,
     _FUN,
@@ -72,6 +85,7 @@ const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT_split_
                   'L', 'L', 'L',  'R', 'R', 'R'
     );
 
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_ALPHA] = LAYOUT_split_3x5_3(
@@ -79,6 +93,24 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
            LT_A,    LT_S,    LT_E,    LT_N,    FR_F,            FR_L,    LT_R,    LT_T,    LT_I,    LT_U,
            FR_Z,    FR_X, FR_MINS,    FR_V,    FR_B,          FR_DOT,    FR_H,    FR_G, FR_COMM,    FR_K,
                           XXXXXXX, LT_TAB,  LT_BSPC,          LT_SPC,  LT_ENT, XXXXXXX
+    ),
+    [_AC_CIRC] = LAYOUT_split_3x5_3(
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX,  E_CIRC, XXXXXXX, XXXXXXX,         XXXXXXX, RSFT_XX, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+                          _______, _______, _______,         _______, _______, _______
+    ),
+    [_AC_AIGU] = LAYOUT_split_3x5_3(
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, FR_EACU, XXXXXXX, XXXXXXX,         XXXXXXX, RSFT_XX, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+                          _______, _______, _______,         _______, _______, _______
+    ),
+    [_AC_GRAV] = LAYOUT_split_3x5_3(
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, FR_EGRV, XXXXXXX, XXXXXXX,         XXXXXXX, RSFT_XX, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+                          _______, _______, _______,         _______, _______, _______
     ),
     [_SYM] = LAYOUT_split_3x5_3(
         FR_CIRC, FR_LABK, FR_RABK,  FR_DLR, FR_PERC,           FR_AT, FR_AMPR, FR_ASTR, FR_QUOT,  FR_GRV,
@@ -99,10 +131,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                           _______, _______, _______,         _______, _______, _______
     ),
     [_DEAD] = LAYOUT_split_3x5_3(
-        XXXXXXX, FR_CCED,   FR_OE, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        AC_CIRC, FR_CCED,   FR_OE, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX, AC_AIGU, AC_GRAV,
           FR_AE, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-                          _______, _______, _______,         _______, _______, _______
+                          _______, _______, _______,         _______,   TO(0), _______
     ),
     [_CFG] = LAYOUT_split_3x5_3(
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,         XXXXXXX, XXXXXXX, XXXXXXX,  QK_RBT, QK_BOOT,
@@ -192,4 +224,41 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
       }
       break;
   }
+}
+
+
+
+// à - â - ä - ë - î - ï - ô - ö - ù - û - ü - ÿ - ç
+
+
+
+
+void send_circumflex_char(uint8_t mods, uint8_t oneshot_mods, const char *lowercase, const char *uppercase) {
+  bool is_shifted = (mods | oneshot_mods) & MOD_MASK_SHIFT;
+
+  if (is_shifted) {
+    del_oneshot_mods(MOD_MASK_SHIFT);
+    unregister_mods(MOD_MASK_SHIFT);
+    SEND_STRING(SS_TAP(X_LBRC));
+    send_string(uppercase);
+    register_mods(mods);
+  } else {
+    SEND_STRING(SS_TAP(X_LBRC));
+    send_string(lowercase);
+  }
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  const uint8_t mods = get_mods();
+  const uint8_t oneshot_mods = get_oneshot_mods();
+
+  switch (keycode) {
+    case E_CIRC:
+      if (record->event.pressed) {
+        send_circumflex_char(mods, oneshot_mods, "e", "E");
+      }
+      break;
+    return false;
+  }
+  return true;
 }
